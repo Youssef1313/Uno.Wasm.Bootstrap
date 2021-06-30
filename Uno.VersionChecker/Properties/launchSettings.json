@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Uno.VersionChecker": {
+      "commandName": "Project",
+      "commandLineArgs": "gallery.platform.uno"
+    }
+  }
+}
