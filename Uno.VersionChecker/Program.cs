@@ -30,6 +30,11 @@ namespace Uno.VersionChecker
 				return 100;
 			}
 
+			if(!webSiteUrl.EndsWith('/'))
+			{
+				webSiteUrl += '/';
+			}
+
 			Console.WriteLine($"Checking website at address {webSiteUrl}");
 
 			Uri siteUri;
