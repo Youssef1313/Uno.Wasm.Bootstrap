@@ -1,14 +1,18 @@
-﻿using ConsoleTables;
+﻿using Colorful;
+using ConsoleTables;
 using HtmlAgilityPack;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+using Console = Colorful.Console;
 
 namespace Uno.VersionChecker
 {
@@ -26,7 +30,7 @@ namespace Uno.VersionChecker
 			if(string.IsNullOrEmpty(webSiteUrl))
 			{
 				var module = global::System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name;
-				Console.WriteLine($"Usage: {module} [web site url]");
+				Console.WriteLine($"Usage: {module} [web site url]", Color.Yellow);
 				return 100;
 			}
 
@@ -35,7 +39,7 @@ namespace Uno.VersionChecker
 				webSiteUrl += '/';
 			}
 
-			Console.WriteLine($"Checking website at address {webSiteUrl}");
+			Console.WriteLineFormatted("Checking website at address {0}.", Color.Gray, new Formatter(webSiteUrl, Color.Aqua));
 
 			Uri siteUri;
 
@@ -51,7 +55,7 @@ namespace Uno.VersionChecker
 			var web = new HtmlWeb();
 			var doc = await web.LoadFromWebAsync(siteUri, default, default, default);
 
-			Console.WriteLine("Identifiying the Uno.UI application");
+			Console.WriteLine("Trying to find Uno bootstrapper configuration...", Color.Gray);
 
 			var unoConfigPath = doc.DocumentNode
 				.SelectNodes("//script")
@@ -64,11 +68,12 @@ namespace Uno.VersionChecker
 
 			if(unoConfigPath is null)
 			{
-				Console.WriteLine("No Uno.UI application found.");
+				Console.WriteLine("No Uno / Uno.UI application found.", Color.Red);
 				return 2;
 			}
+			Console.WriteLine("Application found.", Color.LightGreen);
 
-			Console.WriteLine($"Application found, configuration at url {unoConfigPath}");
+			Console.WriteLineFormatted("Configuration url is {0}.", Color.Gray, new Formatter(unoConfigPath, Color.Aqua));
 
 			using var httpClient = new HttpClient();
 
@@ -168,52 +173,88 @@ namespace Uno.VersionChecker
 			}
 
 			try
+            {
+                var config = await GetConfig(unoConfigPath);
+
+                Console.WriteLineFormatted("Starting assembly is {0}.", Color.Gray, new Formatter(config.mainAssembly, Color.Aqua));
+
+                if (config.assemblies is null || config.assemblies is { Length: 0 })
+                {
+                    Console.WriteLine("No assemblies found. That's odd.", Color.Red);
+                    return 1;
+                }
+
+                Console.WriteLineFormatted("{0} assemblies found. Downloading assemblies to read metadata...", Color.Gray, new Formatter(config.assemblies.Length, Color.Aqua));
+
+                var tasks = config.assemblies
+                    .Select(a => GetAssemblyDetails(new Uri(config.assembliesPath, a)))
+                    .ToArray();
+
+                var assemblyDetails = (await Task.WhenAll(tasks))
+                    .OrderBy(d => d.name);
+
+                var table = new ConsoleTable("Name", "Version", "File Version", "Framework");
+
+				(string name, string version, string fileVersion, string targetFramework) mainAssemblyDetails = default;
+
+				foreach (var assemblyDetail in assemblyDetails)
+                {
+                    table.AddRow(assemblyDetail.name, assemblyDetail.version, assemblyDetail.fileVersion, assemblyDetail.targetFramework);
+
+					if(assemblyDetail.name.Equals(config.mainAssembly))
+                    {
+                        mainAssemblyDetails = assemblyDetail;
+                    }
+                }
+
+				Console.WriteLine();
+
+                WriteTable(table);
+
+				if(mainAssemblyDetails.name is { })
+                {
+					Console.WriteLineFormatted("{0} version is {1}", Color.Gray, new Formatter(mainAssemblyDetails.name, Color.Aqua), new Formatter(mainAssemblyDetails.version, Color.Aqua));
+                }
+
+                var uno = assemblyDetails.FirstOrDefault(d => d.name.Equals("Uno.UI"));
+                if (uno is { })
+                {
+                    Console.WriteLineFormatted("Uno.UI version is {0}", Color.Gray, new Formatter(uno.version, Color.Aqua));
+                }
+                else
+                {
+                    Console.WriteLine("Unable to identify the version of Uno.UI on this application. Maybe this application is only using the Uno bootstrapper.", Color.Orange);
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
 			{
-				var config = await GetConfig(unoConfigPath);
-
-				Console.WriteLine($"Starting assembly is {config.mainAssembly}");
-
-				if(config.assemblies is null || config.assemblies is {Length: 0 })
-				{
-					Console.WriteLine("No assemblies found");
-					return 1;
-				}
-
-				Console.WriteLine($"{config.assemblies?.Length ?? 0} assemblies found. Reading metadata...");
-
-				var tasks = config.assemblies
-					.Select(a => GetAssemblyDetails(new Uri(config.assembliesPath, a)))
-					.ToArray();
-
-				var assemblyDetails = (await Task.WhenAll(tasks))
-					.OrderBy(d => d.name);
-
-				var table = new ConsoleTable("Name", "Version", "File Version", "Framework");
-
-				foreach(var assemblyDetail in assemblyDetails)
-				{
-					table.AddRow(assemblyDetail.name, assemblyDetail.version, assemblyDetail.fileVersion, assemblyDetail.targetFramework);
-				}
-
-				table.Write(Format.Minimal);
-
-				var uno = assemblyDetails.FirstOrDefault(d => d.name.Equals("Uno.UI"));
-				if(uno is { })
-				{
-					Console.WriteLine($"Uno.UI version is {uno.version}");
-				}
-				else
-				{
-					Console.WriteLine("Unable to identify the version of Uno on this application.");
-				}
-
-				return 0;
-			}
-			catch (Exception ex)
-			{
-				Console.Error.WriteLine($"Unable to read uno config: {ex}");
+				Console.Error.WriteLine($"Unable to read uno config: {ex}", Color.Red);
 				return -1;
 			}
 		}
-	}
+
+        private static void WriteTable(ConsoleTable table)
+        {
+            var writer = new StringWriter();
+            table.Options.OutputTo = writer;
+            table.Write(Format.Minimal);
+
+            var alternator = new ColorAlternatorFactory().GetAlternator(1, Color.Aqua, Color.LightBlue);
+            var isHeader = 2;
+
+            foreach (var line in writer.ToString().Split(Environment.NewLine))
+            {
+                if (isHeader-- > 0)
+                {
+                    Console.WriteLine(line, Color.White);
+                }
+                else
+                {
+                    Console.WriteLineAlternating(line, alternator);
+                }
+            }
+        }
+    }
 }
