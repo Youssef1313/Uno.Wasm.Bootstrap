@@ -9,6 +9,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -20,6 +21,8 @@ namespace Uno.VersionChecker
 	{
 		static async Task<int> Main(string[] args)
 		{
+			var version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+			Console.WriteLineFormatted("Uno Version Checker v{0}.", Color.Gray, new Formatter(version, Color.Aqua));
 			var webSiteUrl = args.FirstOrDefault()
 #if DEBUG
 				?? "https://nuget.info/";
@@ -30,7 +33,8 @@ namespace Uno.VersionChecker
 			if(string.IsNullOrEmpty(webSiteUrl))
 			{
 				var module = global::System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name;
-				Console.WriteLine($"Usage: {module} [web site url]", Color.Yellow);
+				Console.WriteLine($"Usage: {module} [application hostname or url]", Color.Yellow);
+				Console.WriteLine($"Default scheme is https if not specified.");
 				return 100;
 			}
 
@@ -46,7 +50,12 @@ namespace Uno.VersionChecker
 			try
 			{
 				siteUri = new Uri(webSiteUrl);
-			}
+
+                if (siteUri.Scheme != Uri.UriSchemeHttp && siteUri.Scheme != Uri.UriSchemeHttps)
+                {
+                    throw new UriFormatException();
+                }
+            }
 			catch(UriFormatException)
 			{
 				siteUri = new Uri($"https://{webSiteUrl}");
