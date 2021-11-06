@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Console = Colorful.Console;
@@ -74,6 +75,22 @@ namespace Uno.VersionChecker
 				.Where(uri => !uri.IsAbsoluteUri)
 				.Select(uri => new Uri(siteUri, uri))
 				.FirstOrDefault(uri => uri.GetLeftPart(UriPartial.Path).EndsWith("uno-config.js", StringComparison.OrdinalIgnoreCase));
+
+            if (unoConfigPath is null)
+            {
+                using var http = new HttpClient();
+                var embeddedjs = new Uri(siteUri, "embedded.js");
+                var embeddedResponse = await http.GetAsync(embeddedjs);
+                if (embeddedResponse.IsSuccessStatusCode)
+                {
+                    var content = await embeddedResponse.Content.ReadAsStringAsync(default);
+                    if (Regex.Match(content, @"const\spackage\s?=\s?""(?<package>package_\w+)"";") is { Success : true } match)
+                    {
+                        var package = match.Groups["package"].Value + "/uno-config.js";
+                        unoConfigPath = new Uri(siteUri, package);
+                    }
+                }
+            }
 
 			if(unoConfigPath is null)
 			{
