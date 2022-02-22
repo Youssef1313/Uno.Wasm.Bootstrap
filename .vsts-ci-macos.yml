@@ -1,0 +1,75 @@
+parameters:
+  jobName: ''
+  vmImage: ''
+  netcore_version: ''
+
+jobs:
+- job:  ${{ parameters.jobName }}
+
+  pool:
+    vmImage: ${{ parameters.vmImage }}
+
+  variables:
+    NUGET_PACKAGES: $(Agent.WorkFolder)/.nuget
+    EMSCRIPTEN_VERSION: 1.40.0
+    SourceLinkEnabled: false
+
+  steps:
+  - template: build/ci/gitversion.yml
+  - template: build/ci/dotnet-install.yml
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET 5 SDK'
+    inputs:
+      packageType: sdk
+      version: '5.0.400'
+
+  - bash: |
+      cd $(Agent.WorkFolder)
+      wget https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip
+      unzip ninja-mac.zip -d ninja-mac
+     
+    displayName: 'Install Ninja'
+
+  - bash: |
+      cd ~
+      echo Installing emscripten $(EMSCRIPTEN_VERSION)
+      git clone --branch $(EMSCRIPTEN_VERSION) https://github.com/emscripten-core/emsdk
+      cd ~/emsdk
+      ./emsdk install $(EMSCRIPTEN_VERSION)
+      ./emsdk activate $(EMSCRIPTEN_VERSION)
+
+    displayName: 'Setup Emscripten'
+
+  # - bash: |
+  #     source ~/emsdk/emsdk_env.sh
+  #     export PATH=$PATH:$(Agent.WorkFolder)/ninja-mac
+  #     msbuild /r /t:Publish /p:Configuration=Release src/Uno.Wasm.Bootstrap.sln
+  # 
+  #   displayName: MSBuild Validation
+
+  # - task: CopyFiles@2
+  #   inputs:
+  #     SourceFolder: $(build.sourcesdirectory)/src/Uno.Wasm.AotTests/bin/Release/netstandard2.0/dist
+  #     Contents: '**/*.*'
+  #     TargetFolder: $(build.artifactstagingdirectory)
+  #     CleanTargetFolder: false
+  #     OverWrite: false
+  #     flattenFolders: false
+
+  - bash: |
+      cd $(build.sourcesdirectory)/src/Uno.Wasm.Bootstrap
+      dotnet msbuild /r /p:Configuration=Release
+    displayName: Build bootstrap
+
+  - bash: |
+      cd $(build.sourcesdirectory)/src/Uno.Wasm.SampleNet5
+      dotnet build -m:1 /bl:$(build.artifactstagingdirectory)/SampleNet5-mac.binlog
+    displayName: Build NetCore-Wasm Sample
+
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    inputs:
+      PathtoPublish: $(build.artifactstagingdirectory)
+      ArtifactName: uno-wasm-bootstrap-macos-aot
+      ArtifactType: Container

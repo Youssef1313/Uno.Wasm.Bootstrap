@@ -1,0 +1,10 @@
+parameters:
+  DotNetVersion: '6.0.200'
+
+steps:
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET 6 SDK'
+    inputs:
+      version: ${{ parameters.DotNetVersion }}
+      includePreviewVersions: true

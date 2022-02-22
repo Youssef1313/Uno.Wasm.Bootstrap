@@ -73,6 +73,7 @@ StyleCopReport.xml
 *_i.c
 *_p.c
 *_h.h
+*_i.h
 *.ilk
 *.meta
 *.obj
@@ -131,6 +132,9 @@ $tf/
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
+
+# JustCode is a .NET coding add-in
+.JustCode
 
 # TeamCity is a build add-in
 _TeamCity*
@@ -238,6 +242,7 @@ ClientBin/
 *.jfm
 *.pfx
 *.publishsettings
+node_modules/
 orleans.codegen.cs
 
 # Including strong name files can present a security risk
@@ -311,6 +316,12 @@ paket-files/
 
 # CodeRush personal settings
 .cr/personal
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# CodeRush
+.cr/
 
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
@@ -361,3 +372,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Directory Cache files
+.DS_Store
+thumbs.db
+/src/Uno.Wasm.Bootstrap/build/packager
+/src/Uno.Wasm.Bootstrap/build/wasm-tuner
