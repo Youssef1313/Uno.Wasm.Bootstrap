@@ -1,13 +1,13 @@
 # Uno.VersionChecker
 
-This is a tool to extract the version of _dotnet assemblies_ used on a Uno.UI application. Should also work with almost any application built on _Uno Bootstrapper_.
+This is a tool to extract the version of _dotnet assemblies_ used on a Uno.UI application. Should also work with most applications built on _Uno Bootstrapper_.
 
 ## Usage
 
 Start the executable using the URI of your Uno application.
 
 ``` shell
-> Uno.VersionChecker https://nuget.info/
+> uno-ver https://nuget.info/
 ```
 
 You should see the result as
