@@ -4,11 +4,12 @@
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net5.0</TargetFramework>
 		<Nullable>enable</Nullable>
+		<LangVersion>10.0</LangVersion>
 
 		<InformationalVersion Condition="'$(Configuration)'=='Debug'">0.0.0-local-dev-build-DOT-NOT-PUBLISH</InformationalVersion>
 
 		<PackAsTool>true</PackAsTool>
-		<ToolCommandName>unover</ToolCommandName>
+		<ToolCommandName>uno-ver</ToolCommandName>
 		<PackageOutputPath>./nupkg</PackageOutputPath>
 	</PropertyGroup>
 

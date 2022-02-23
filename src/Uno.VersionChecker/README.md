@@ -2,41 +2,66 @@
 
 This is a tool to extract the version of _dotnet assemblies_ used on a Uno.UI application. Should also work with most applications built on _Uno Bootstrapper_.
 
+## Installation
+Install the executable using the following command:
+
+``` shell
+> dotnet tool install -g Uno.VersionChecker
+```
+
 ## Usage
 
 Start the executable using the URI of your Uno application.
 
 ``` shell
-> uno-ver https://nuget.info/
+> uno-ver nuget.info
 ```
 
 You should see the result as
 
 ```
-Checking website at address nuget.info
-Identifiying the Uno.UI application
-Application found, configuration at url https://nuget.info/package_f70b285907b7e95c22b73b365da9ce59bf07069f/uno-config.js
-Starting assembly is PackageExplorer
-120 assemblies found. Reading metadata...
-Name                                               Version                                                                                                                File Version     Framework
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-AuthenticodeExaminer                               1.0.0                                                                                                                  1.0.0.0          .NETStandard,Version=v2.0
-ColorCode.Core                                     2.0.8+gd42a883502                                                                                                      2.0.8.37         .NETStandard,Version=v2.0
-ColorCode.UWP                                      2.0.8+gd42a883502                                                                                                      2.0.8.37         .NETStandard,Version=v2.0
-CommonServiceLocator                               2.0.5                                                                                                                  2.0.5.0          .NETCoreApp,Version=v3.0
-[... many lines ...]
-Uno                                                3.8.0-dev.457+Branch.master.Sha.5c6bd5fcd9ad846448db6c0f6029d5a331630c46.5c6bd5fcd9ad846448db6c0f6029d5a331630c46      255.255.255.255  .NETStandard,Version=v2.0
-Uno.Core                                           2.4.0-dev.2+Branch.master.Sha.f3652f8713d699a7f7452550173f5c2ef3fd2080.f3652f8713d699a7f7452550173f5c2ef3fd2080        1.0.0.0          .NETCoreApp,Version=v5.0
-Uno.Diagnostics.Eventing                           1.0.4+Branch.release-stable-1.0.Sha.1ca00890632a6524587ce0092f613861192c7567.1ca00890632a6524587ce0092f613861192c7567  255.255.255.255  .NETStandard,Version=v2.0
-Uno.Foundation                                     3.8.0-dev.457+Branch.master.Sha.5c6bd5fcd9ad846448db6c0f6029d5a331630c46.5c6bd5fcd9ad846448db6c0f6029d5a331630c46      255.255.255.255  .NETStandard,Version=v2.0
-Uno.Foundation.Runtime.WebAssembly                 3.8.0-dev.457+Branch.master.Sha.5c6bd5fcd9ad846448db6c0f6029d5a331630c46.5c6bd5fcd9ad846448db6c0f6029d5a331630c46      255.255.255.255  .NETStandard,Version=v2.0
-Uno.UI                                             3.8.0-dev.457+Branch.master.Sha.5c6bd5fcd9ad846448db6c0f6029d5a331630c46.5c6bd5fcd9ad846448db6c0f6029d5a331630c46      255.255.255.255  .NETStandard,Version=v2.0
-Uno.UI.FluentTheme                                 3.8.0-dev.457+Branch.master.Sha.5c6bd5fcd9ad846448db6c0f6029d5a331630c46.5c6bd5fcd9ad846448db6c0f6029d5a331630c46      255.255.255.255  .NETStandard,Version=v2.0
-Uno.UI.Runtime.WebAssembly                         3.8.0-dev.457+Branch.master.Sha.5c6bd5fcd9ad846448db6c0f6029d5a331630c46.5c6bd5fcd9ad846448db6c0f6029d5a331630c46      255.255.255.255  .NETStandard,Version=v2.0
-Uno.UI.Toolkit                                     3.8.0-dev.457+Branch.master.Sha.5c6bd5fcd9ad846448db6c0f6029d5a331630c46.5c6bd5fcd9ad846448db6c0f6029d5a331630c46      255.255.255.255  .NETStandard,Version=v2.0
-Uno.Wasm.TimezoneData                              3.0.0-dev.87+Branch.main.Sha.9b385b45c6a8fca078496fb104747d3eba2814d8.9b385b45c6a8fca078496fb104747d3eba2814d8         1.0.0.0          .NETStandard,Version=v2.0
-Uno.Xaml                                           3.8.0-dev.457+Branch.master.Sha.5c6bd5fcd9ad846448db6c0f6029d5a331630c46.5c6bd5fcd9ad846448db6c0f6029d5a331630c46      255.255.255.255  .NETStandard,Version=v2.0
+Uno Version Checker v2.0.0
+Checking website at address nuget.info/.
+Trying to find Uno bootstrapper configuration...
+Application found.
+Configuration url is https://nuget.info/package_87a60034b14b4aae8011cc0b692a984ec34a9f7f/uno-config.js.
+Starting assembly is PackageExplorer.
+129 assemblies found. Downloading assemblies to read metadata...
 
-Uno.UI version is 3.8.0-dev.457+Branch.master.Sha.5c6bd5fcd9ad846448db6c0f6029d5a331630c46.5c6bd5fcd9ad846448db6c0f6029d5a331630c46
+Name                                                   Version                                                                                                                 File Version     Framework
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+AuthenticodeExaminer                                   1.0.0                                                                                                                   1.0.0.0          .NETStandard,Version=v2.0
+ColorCode.Core                                         1.0.0                                                                                                                   1.0.0.0          .NETStandard,Version=v2.0
+ColorCode.UWP                                          1.0.0                                                                                                                   1.0.0.0          .NETStandard,Version=v2.0
+
+[... many more lines ...]
+
+System.Text.Json                                       6.0.0-dev                                                                                                               42.42.42.42424   .NETCoreApp,Version=v6.0
+System.Text.RegularExpressions                         6.0.0-dev                                                                                                               42.42.42.42424   .NETCoreApp,Version=v6.0
+System.Threading                                       6.0.0-dev                                                                                                               42.42.42.42424   .NETCoreApp,Version=v6.0
+System.Web.HttpUtility                                 6.0.0-dev                                                                                                               42.42.42.42424   .NETCoreApp,Version=v6.0
+Uno                                                    4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+Uno.Core.Extensions.Compatibility                      4.0.1+Branch.release-stable-4.0.Sha.22b308ce80cd950a755f49590bde3842b5c45843.22b308ce80cd950a755f49590bde3842b5c45843   1.0.0.0          .NETCoreApp,Version=v6.0
+Uno.Core.Extensions.Disposables                        4.0.1+Branch.release-stable-4.0.Sha.22b308ce80cd950a755f49590bde3842b5c45843.22b308ce80cd950a755f49590bde3842b5c45843   1.0.0.0          .NETCoreApp,Version=v6.0
+Uno.Core.Extensions.Logging                            4.0.1+Branch.release-stable-4.0.Sha.22b308ce80cd950a755f49590bde3842b5c45843.22b308ce80cd950a755f49590bde3842b5c45843   1.0.0.0          .NETCoreApp,Version=v6.0
+Uno.Core.Extensions.Logging.Singleton                  4.0.1+Branch.release-stable-4.0.Sha.22b308ce80cd950a755f49590bde3842b5c45843.22b308ce80cd950a755f49590bde3842b5c45843   1.0.0.0          .NETCoreApp,Version=v6.0
+Uno.Diagnostics.Eventing                               2.0.1+Branch.release-stable-2.0.Sha.219a53f37bfab968773eb7d563a9f93beedb63e2                                            255.255.255.255  .NETCoreApp,Version=v5.0
+Uno.Extensions.Logging.WebAssembly.Console             1.1.0+Branch.release-stable-1.1.Sha.0a9f8024236c1fee96357291d17cf68a46ed0a3e.0a9f8024236c1fee96357291d17cf68a46ed0a3e   1.0.0.0          .NETCoreApp,Version=v5.0
+Uno.Foundation                                         4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+Uno.Foundation.Logging                                 4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETCoreApp,Version=v6.0
+Uno.Foundation.Runtime.WebAssembly                     4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+Uno.UI                                                 4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+Uno.UI.Adapter.Microsoft.Extensions.Logging            4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETCoreApp,Version=v6.0
+Uno.UI.Composition                                     4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+Uno.UI.Dispatching                                     4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+Uno.UI.FluentTheme.v2                                  4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+Uno.UI.Runtime.WebAssembly                             4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+Uno.UI.Toolkit                                         4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+Uno.Wasm.TimezoneData                                  3.1.3+Branch.release-stable-3.1.Sha.a01173706452d6a3642c80df957b3b52c781fe91.a01173706452d6a3642c80df957b3b52c781fe91   1.0.0.0          .NETStandard,Version=v2.0
+Uno.Xaml                                               4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72  255.255.255.255  .NETStandard,Version=v2.0
+
+
+PackageExplorer version is 6.0.32+a7d8c67341
+Uno.UI version is 4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72
+Executing framework is .NETCoreApp,Version=v6.0 version 6.0.0-dev
 ```
-
