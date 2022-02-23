@@ -53,6 +53,11 @@ jobs:
     displayName: Build bootstrap
 
   - bash: |
+      cd $(build.sourcesdirectory)/src/Uno.VersionChecker
+      dotnet msbuild /r /p:Configuration=Release /p:DISABLE_CLIHOST_NET6=true
+    displayName: Build Uno-Ver
+
+  - bash: |
       cd $(build.sourcesdirectory)/src
       dotnet msbuild /r /p:Configuration=Release /p:DISABLE_CLIHOST_NET6=true /t:Publish /m:1 Uno.Wasm.Bootstrap-netcore-only.slnf /bl:$(build.artifactstagingdirectory)/SampleNet5.binlog
     displayName: Build NetCore-Wasm Sample
