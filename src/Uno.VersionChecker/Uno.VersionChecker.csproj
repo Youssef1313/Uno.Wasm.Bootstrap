@@ -9,7 +9,7 @@
 		<InformationalVersion Condition="'$(Configuration)'=='Debug'">0.0.0-local-dev-build-DOT-NOT-PUBLISH</InformationalVersion>
 
 		<PackAsTool>true</PackAsTool>
-		<ToolCommandName>uno-ver</ToolCommandName>
+		<ToolCommandName>uno-wasm-version</ToolCommandName>
 		<PackageOutputPath>./nupkg</PackageOutputPath>
 	</PropertyGroup>
 

@@ -9,12 +9,12 @@ Install the executable using the following command:
 > dotnet tool install -g Uno.VersionChecker
 ```
 
-## Usage
+## Usage of `uno-wasm-version`
 
 Start the executable using the URI of your Uno application.
 
 ``` shell
-> uno-ver nuget.info
+> uno-wasm-version nuget.info
 ```
 
 You should see the result as
@@ -63,5 +63,5 @@ Uno.Xaml                                               4.0.11+Branch.release-sta
 
 PackageExplorer version is 6.0.32+a7d8c67341
 Uno.UI version is 4.0.11+Branch.release-stable-4.0.Sha.3a627c10121883bf42ef5b5a19ceb5468c4dcd72.3a627c10121883bf42ef5b5a19ceb5468c4dcd72
-Executing framework is .NETCoreApp,Version=v6.0 version 6.0.0-dev
+Runtime framework is .NETCoreApp,Version=v6.0 version 6.0.0-dev
 ```

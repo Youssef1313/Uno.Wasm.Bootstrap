@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -22,10 +23,10 @@ namespace Uno.VersionChecker
 		private readonly Uri _siteUri;
 		private readonly HttpClient _httpClient = new HttpClient();
 
-		private ImmutableArray<(string name, string version, string fileVersion, string targetFramework)> _assemblies;
-		private (Uri assembliesPath, string? mainAssembly, string[]? assemblies) _config;
-		private (string name, string version, string fileVersion, string targetFramework) _mainAssemblyDetails;
-		private (string version, string name) _framework;
+		private ImmutableArray<(string name, string version, string fileVersion, string configuration, string targetFramework, string? commit)> _assemblies;
+		private (Uri assembliesPath, string? mainAssembly, string[]? assemblies, string? server) _config;
+		private (string name, string version, string fileVersion, string configuration, string targetFramework, string? commit) _mainAssemblyDetails;
+		private (string? version, string? name) _framework;
 		private bool _isAot;
 		
 		public UnoVersionExtractor(Uri siteUri)
@@ -62,7 +63,7 @@ namespace Uno.VersionChecker
 
 			Console.WriteLine("Trying to find Uno bootstrapper configuration...", Color.Gray);
 
-			var unoConfigPath = doc.DocumentNode
+			var unoConfigPath = doc?.DocumentNode
 				.SelectNodes("//script")
 				.Select(scriptElement => scriptElement.GetAttributeValue("src", ""))
 				.Where(src => !string.IsNullOrWhiteSpace(src))
@@ -100,6 +101,14 @@ namespace Uno.VersionChecker
 
 			_config = await GetConfig(unoConfigPath);
 
+			if (_config.server is { })
+			{
+				Console.WriteLineFormatted(
+					"Server is {0}",
+					Color.Gray,
+					new Formatter(_config.server, Color.Aqua));
+			}
+
 			Console.WriteLineFormatted("Starting assembly is {0}.", Color.Gray,
 				new Formatter(_config.mainAssembly, Color.Aqua));
 
@@ -127,7 +136,7 @@ namespace Uno.VersionChecker
 				{
 					_mainAssemblyDetails = assemblyDetail;
 				}
-				else if (assemblyDetail.name == "mscorlib" || assemblyDetail.name == "netstandard")
+				else if (assemblyDetail.name is "mscorlib" or "netstandard")
 				{
 					_framework = (assemblyDetail.version, assemblyDetail.targetFramework);
 				}
@@ -142,12 +151,17 @@ namespace Uno.VersionChecker
 
 		public void OutputResults()
 		{
-			var table = new ConsoleTable("Name", "Version", "File Version", "Framework");
+			var table = new ConsoleTable("Name", "Version", "File Version", "Build", "Framework", "Commit");
 
 			foreach (var assemblyDetail in _assemblies)
 			{
-				table.AddRow(assemblyDetail.name, assemblyDetail.version, assemblyDetail.fileVersion,
-					assemblyDetail.targetFramework);
+				table.AddRow(
+					assemblyDetail.name,
+					assemblyDetail.version,
+					assemblyDetail.fileVersion,
+					assemblyDetail.configuration,
+					assemblyDetail.targetFramework,
+					assemblyDetail.commit);
 			}
 
 			Console.WriteLine();
@@ -156,12 +170,15 @@ namespace Uno.VersionChecker
 
 			if (_mainAssemblyDetails.name is { })
 			{
-				Console.WriteLineFormatted("{0} version is {1}", Color.Gray,
+				var configuration = _mainAssemblyDetails.configuration;
+
+				Console.WriteLineFormatted("{0} version is {1} ({2})", Color.Gray,
 					new Formatter(_mainAssemblyDetails.name, Color.Aqua),
-					new Formatter(_mainAssemblyDetails.version, Color.Aqua));
+					new Formatter(_mainAssemblyDetails.version, Color.Aqua),
+					new Formatter(configuration, configuration is "Release" ? Color.Aqua : Color.Orange));
 			}
 
-			var uno = _assemblies.FirstOrDefault(d => d.name.Equals("Uno.UI"));
+			var uno = _assemblies.FirstOrDefault(d => d.name is "Uno.UI");
 			if (uno is { name: { } })
 			{
 				Console.WriteLineFormatted("Uno.UI version is {0}", Color.Gray, new Formatter(uno.version, Color.Aqua));
@@ -176,7 +193,7 @@ namespace Uno.VersionChecker
 			if (_framework.name is { })
 			{
 				Console.WriteLineFormatted(
-					"Executing framework is {0} version {1}",
+					"Runtime is {0} version {1}",
 					Color.Gray,
 					new Formatter(_framework.name, Color.Aqua),
 					new Formatter(_framework.version, Color.Aqua));
@@ -184,20 +201,24 @@ namespace Uno.VersionChecker
 			else
 			{
 				Console.WriteLine(
-					"Unable to identify the executing dotnet framework.",
+					"Unable to identify the runtime.",
 					Color.Orange);
 			}
 		}
 
-		private async Task<(Uri assembliesPath, string? mainAssembly, string[]? assemblies)> GetConfig(Uri uri)
+		private async Task<(Uri assembliesPath, string? mainAssembly, string[]? assemblies, string? server)> GetConfig(Uri uri)
 		{
-			await using var stream = await _httpClient.GetStreamAsync(uri);
+			using var response = await _httpClient.GetAsync(uri);
+			response.EnsureSuccessStatusCode();
+
+			await using var stream = await response.Content.ReadAsStreamAsync();
 			using var reader = new StreamReader(stream);
 
 			string? managePath = default;
 			string? packagePath = default;
 			string? mainAssembly = default;
 			string[]? assemblies = default;
+			var server = response.Headers.Server?.ToString();
 
 			while (!reader.EndOfStream)
 			{
@@ -240,10 +261,15 @@ namespace Uno.VersionChecker
 
 			var assembliesPath = new Uri(new Uri(_siteUri, packagePath + "/"), managePath + "/");
 
-			return (assembliesPath, mainAssembly, assemblies);
+			return (assembliesPath, mainAssembly, assemblies, server);
 		}
 
-		private async Task<(string name, string version, string fileVersion, string targetFramework)> GetAssemblyDetails(Uri uri)
+		private static readonly Regex COMMIT_REGEX = new Regex(
+			@"[^\w]([0-9a-f]{40})([^\w]|$)",
+			RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+
+		private async Task<(string name, string version, string fileVersion, string configuration, string targetFramework, string? commit)> GetAssemblyDetails(Uri uri)
 		{
 			await using var httpStream = await _httpClient.GetStreamAsync(uri);
 
@@ -259,19 +285,31 @@ namespace Uno.VersionChecker
 			var version = assembly.Name.Version.ToString();
 			var fileVersion = "";
 			var targetFramework = "";
+			var commit = default(string?);
+			var configuration = "";
 
 			foreach (var attribute in attributes)
 			{
 				switch (attribute.AttributeType.Name)
 				{
 					case "AssemblyInformationalVersionAttribute":
-						version = attribute.ConstructorArguments[0].Value?.ToString() ?? "";
+						var versionStr = attribute.ConstructorArguments[0].Value?.ToString() ?? "";
+						version = versionStr.Split('+').FirstOrDefault() ?? "";
+
+						if (COMMIT_REGEX.Match(versionStr) is { Success: true } m)
+						{
+							commit = m.Groups[1].Value;
+						}
+
 						break;
 					case "AssemblyFileVersionAttribute":
 						fileVersion = attribute.ConstructorArguments[0].Value?.ToString() ?? "";
 						break;
 					case "TargetFrameworkAttribute":
 						targetFramework = attribute.ConstructorArguments[0].Value?.ToString() ?? "";
+						break;
+					case "AssemblyConfigurationAttribute":
+						configuration = attribute.ConstructorArguments[0].Value?.ToString() ?? "";
 						break;
 				}
 			}
@@ -281,7 +319,7 @@ namespace Uno.VersionChecker
 				targetFramework = "WASM AOT";
 			}
 
-			return (name, version, fileVersion, targetFramework);
+			return (name, version, fileVersion, configuration, targetFramework, commit);
 		}
 
 

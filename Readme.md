@@ -12,14 +12,14 @@ This package only provides the bootstrapping features to run a .NET assembly and
 
 This package is based on the excellent work from @praeclarum's [OOui Wasm MSBuild task](https://github.com/praeclarum/Ooui).
 
-## Uno-Ver
+## Uno Version Checker
 
-It is now possible to install the `uno-ver` tool to help identify the version of a published application.
+The `uno-wasm-version` tool is useful to identify version of assemblies in a published application.
 
 ``` shell
 > dotnet tool install -g Uno.VersionChecker
 
-> uno-ver gallery.platform.uno
+> uno-wasm-version gallery.platform.uno
 ```
 
 More details [here](Uno.VersionChecker/README.md).
