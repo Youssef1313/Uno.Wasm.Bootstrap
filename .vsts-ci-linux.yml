@@ -55,7 +55,7 @@ jobs:
   - bash: |
       cd $(build.sourcesdirectory)/src/Uno.VersionChecker
       dotnet msbuild /r /p:Configuration=Release /p:DISABLE_CLIHOST_NET6=true
-    displayName: Build Uno-Ver
+    displayName: Build Uno-Wasm-Version
 
   - bash: |
       cd $(build.sourcesdirectory)/src

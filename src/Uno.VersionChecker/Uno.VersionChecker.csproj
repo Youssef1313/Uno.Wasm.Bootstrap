@@ -11,6 +11,8 @@
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>uno-wasm-version</ToolCommandName>
 		<PackageOutputPath>./nupkg</PackageOutputPath>
+
+		<GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
