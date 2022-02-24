@@ -54,7 +54,7 @@ jobs:
 
   - bash: |
       cd $(build.sourcesdirectory)/src/Uno.VersionChecker
-      dotnet msbuild /r /p:Configuration=Release /p:DISABLE_CLIHOST_NET6=true
+      dotnet msbuild /r /p:Configuration=Release /p:DISABLE_CLIHOST_NET6=true /p:Version=${{ steps.gitversion.outputs.nuGetVersionV2 }}"
     displayName: Build Uno-Wasm-Version
 
   - bash: |
